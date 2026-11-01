@@ -1,0 +1,50 @@
+:root { color-scheme: dark; font-family: "Noto Sans", "DejaVu Sans", Arial, sans-serif; background: #10263c; color: #f4f3f8; }
+* { box-sizing: border-box; }
+html, body { margin: 0; width: 100%; height: 100%; overflow: hidden; }
+body { cursor: none; }
+[hidden] { display: none !important; }
+#display { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; transform-origin: 0 0; background: #10263c; }
+.header { position: absolute; left: 40px; top: 40px; width: 1840px; height: 120px; display: grid; grid-template-columns: 660px 670px 430px; column-gap: 40px; align-items: center; }
+.eyebrow { color: #c2dce9; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+.identity h1 { margin: 8px 0; font-size: 38px; line-height: 1.15; font-weight: 800; letter-spacing: -.5px; }
+.edition { font-size: 17px; letter-spacing: 2px; color: #c2dce9; }
+.edition span { color: #ffd166; }.edition b { font-size: 13px; background: #2c4a60; padding: 3px 8px; margin-left: 16px; letter-spacing: 1px; }
+.lesson-status { border-left: 4px solid #457b97; padding-left: 28px; }
+#week { font-size: 20px; font-weight: 700; color: #bdd5e1; letter-spacing: 1.3px; }
+#phase { font-size: 32px; line-height: 1.2; margin: 9px 0 6px; font-weight: 800; }
+#countdown { font-size: 22px; color: #ffd166; font-variant-numeric: tabular-nums; }
+.time-panel { text-align: right; }.time-panel time { display: block; font-size: 54px; font-weight: 700; line-height: 1.12; font-variant-numeric: tabular-nums; letter-spacing: -1px; }
+#date { font-size: 19px; margin-top: 4px; color: #d8e5ee; } #weather { margin-top: 5px; font-size: 17px; color: #bdd5e1; }
+#tables { position: absolute; inset: 0; }
+.table { position: absolute; top: 184px; width: 904px; height: 780px; padding: 20px; background: #1a354b; border-radius: 16px; box-shadow: inset 0 0 0 1px #457b97; }
+#table-left { left: 40px; } #table-right { left: 976px; }
+.table-title { height: 48px; display: flex; justify-content: space-between; align-items: flex-start; }
+.table-title h2 { font-size: 26px; line-height: 36px; margin: 0; letter-spacing: 2px; }
+.table-title span { color: #b8cfdd; font-size: 16px; line-height: 36px; letter-spacing: 2px; }
+.columns { height: 40px; display: grid; grid-template-columns: 105px 285px 340px 134px; align-items: center; color: #c9dfe9; background: #24485e; font-size: 16px; font-weight: 700; letter-spacing: 1px; }
+.columns span { padding: 0 12px; }.columns span:first-child, .columns span:last-child { text-align: center; padding: 0; }
+.rows { display: grid; grid-template-rows: repeat(4, 160px); gap: 4px; background: #457b97; }
+.class-row { display: grid; grid-template-columns: 105px 759px; height: 160px; background: #203e54; position: relative; }
+.class-row:nth-child(even) { background: #1c384e; }
+.class-cell { background: #2a5068; display: flex; flex-direction: column; gap: 10px; justify-content: center; align-items: center; }
+.class-name { font-size: 34px; font-weight: 800; white-space: nowrap; letter-spacing: -1px; }
+.badge { font-size: 12px; letter-spacing: .3px; color: #10263c; background: #ffd166; padding: 3px 6px; border-radius: 3px; font-weight: 800; }
+.duty-mark { font-size: 11px; color: #ffd166; font-weight: 700; }
+.lessons { display: grid; min-width: 0; min-height: 0; }
+.lesson-group { display: grid; grid-template-columns: 285px 340px 134px; min-height: 0; }
+.lesson-group + .lesson-group { border-top: 1px solid #7898aa; }
+.cell { padding: 12px; min-width: 0; min-height: 0; display: flex; flex-direction: column; justify-content: center; }
+.teacher { border-left: 1px solid #385b71; }.room { border-left: 1px solid #385b71; text-align: center; }
+.group-label { font-size: 12px; line-height: 16px; color: #bfd9e5; letter-spacing: 1px; font-weight: 700; margin-bottom: 2px; }
+.fit-text { display: flex; align-items: center; flex: 0 1 auto; min-height: 0; overflow-wrap: anywhere; line-height: 1.13; white-space: pre-wrap; }
+.subject .fit-text { font-size: 29px; font-weight: 700; }.teacher .fit-text { font-size: 28px; font-weight: 500; }
+.room .fit-text { display: block; width: 100%; font-size: 36px; font-weight: 800; color: #ffd166; }
+.is-split .cell { padding-top: 5px; padding-bottom: 5px; }.is-split .subject .fit-text { font-size: 25px; }.is-split .teacher .fit-text { font-size: 26px; }.is-split .room .fit-text { font-size: 32px; }
+.empty { color: #b5ccda; font-weight: 400; }
+.footer { position: absolute; top: 980px; left: 40px; width: 1840px; height: 60px; border-top: 1px solid #457b97; display: flex; align-items: center; justify-content: space-between; gap: 24px; font-size: 16px; color: #c8dce7; }
+#connection { max-width: 990px; }#connection::before { content: ""; display: inline-block; width: 8px; height: 8px; margin-right: 12px; border-radius: 50%; background: #9fdcb8; }
+.offline #connection { color: #ffd166; }.offline #connection::before { background: #ffd166; } #duty { color: #ffd166; }#source { font-size: 14px; letter-spacing: .5px; }
+#special { position: absolute; left: 40px; top: 184px; width: 1840px; height: 780px; background: #10263c; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 60px; }
+#special h2 { font-size: 88px; margin: 32px 0 16px; line-height: 1.15; }#special p { font-size: 36px; color: #c2dce9; margin: 0 0 40px; }#special > span { font-size: 15px; letter-spacing: 3px; color: #b4cedd; }
+.alarm #phase { color: #ffd166; }.alarm .lesson-status { border-color: #ff7b7b; }
+/* No transitions/animations, pagination or layout-changing effects on the TV. */

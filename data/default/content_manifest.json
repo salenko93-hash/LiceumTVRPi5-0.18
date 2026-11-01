@@ -1,0 +1,29 @@
+{
+  "version": "public-4.0.0",
+  "schedules": {
+    "schedule_numerator.json": {
+      "url": "schedule_numerator.json",
+      "sha256": "e0227fe4e9a23635a0aab3468dec8f5afb97429abeb3d079f1198a8448acf6e0"
+    },
+    "schedule_denominator.json": {
+      "url": "schedule_denominator.json",
+      "sha256": "e0227fe4e9a23635a0aab3468dec8f5afb97429abeb3d079f1198a8448acf6e0"
+    },
+    "shelter_numerator.json": {
+      "url": "shelter_numerator.json",
+      "sha256": "e0227fe4e9a23635a0aab3468dec8f5afb97429abeb3d079f1198a8448acf6e0"
+    },
+    "shelter_denominator.json": {
+      "url": "shelter_denominator.json",
+      "sha256": "e0227fe4e9a23635a0aab3468dec8f5afb97429abeb3d079f1198a8448acf6e0"
+    }
+  },
+  "calendar": {
+    "url": "calendar.json",
+    "sha256": "eb249fcff182b692b3b32b4a79bd7124f0276fa5955d8ce903846225919d03a1"
+  },
+  "content": {
+    "url": "content.json",
+    "sha256": "bd054d493c3645f72777b775193647127f42aac92bab23b67952b9ed0dd1d856"
+  }
+}

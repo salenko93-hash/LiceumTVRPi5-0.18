@@ -1,0 +1,185 @@
+{
+  "now": "2026-09-07T08:10:00+03:00",
+  "date": "07.09.2026",
+  "clock": "08:10:00",
+  "mode": "NORMAL",
+  "schedule": {
+    "date": "2026-09-07",
+    "day_label": "ПОНЕДІЛОК",
+    "week": {
+      "numerator": false,
+      "label": "ЗНАМЕННИК",
+      "next_label": "ЧИСЕЛЬНИК",
+      "paused": false,
+      "reason": "academic_week",
+      "week_offset": 1,
+      "academic_week_index": 1,
+      "academic_week_number": 2,
+      "calendar_week_offset": 1,
+      "monday": "2026-09-07"
+    },
+    "shelter": false,
+    "rows": [
+      {
+        "className": "10-А",
+        "entries": [
+          {
+            "subject": "Тестовий предмет 1",
+            "teacher": "Викладач 1 (DEMO)",
+            "room": "D1",
+            "subgroup": "1"
+          },
+          {
+            "subject": "Тестовий предмет 1",
+            "teacher": "Викладач 1 (DEMO)",
+            "room": "D1",
+            "subgroup": "2"
+          }
+        ],
+        "substitution": false
+      },
+      {
+        "className": "10-Б",
+        "entries": [
+          {
+            "subject": "Тестовий предмет 2",
+            "teacher": "Викладач 2 (DEMO)",
+            "room": "D2",
+            "subgroup": "1"
+          },
+          {
+            "subject": "Тестовий предмет 2",
+            "teacher": "Викладач 2 (DEMO)",
+            "room": "D2",
+            "subgroup": "2"
+          }
+        ],
+        "substitution": false
+      },
+      {
+        "className": "10-В",
+        "entries": [
+          {
+            "subject": "Тестовий предмет 3",
+            "teacher": "Викладач 3 (DEMO)",
+            "room": "D3",
+            "subgroup": "1"
+          },
+          {
+            "subject": "Тестовий предмет 3",
+            "teacher": "Викладач 3 (DEMO)",
+            "room": "D3",
+            "subgroup": "2"
+          }
+        ],
+        "substitution": false
+      },
+      {
+        "className": "10-Г",
+        "entries": [
+          {
+            "subject": "Тестовий предмет 4",
+            "teacher": "Викладач 4 (DEMO)",
+            "room": "D4",
+            "subgroup": "1"
+          },
+          {
+            "subject": "Тестовий предмет 4",
+            "teacher": "Викладач 4 (DEMO)",
+            "room": "D4",
+            "subgroup": "2"
+          }
+        ],
+        "substitution": false
+      },
+      {
+        "className": "11-А",
+        "entries": [
+          {
+            "subject": "Тестовий предмет 5",
+            "teacher": "Викладач 5 (DEMO)",
+            "room": "D5",
+            "subgroup": "1"
+          },
+          {
+            "subject": "Тестовий предмет 5",
+            "teacher": "Викладач 5 (DEMO)",
+            "room": "D5",
+            "subgroup": "2"
+          }
+        ],
+        "substitution": false
+      },
+      {
+        "className": "11-Б",
+        "entries": [
+          {
+            "subject": "Тестовий предмет 6",
+            "teacher": "Викладач 6 (DEMO)",
+            "room": "D6",
+            "subgroup": "1"
+          },
+          {
+            "subject": "Тестовий предмет 6",
+            "teacher": "Викладач 6 (DEMO)",
+            "room": "D6",
+            "subgroup": "2"
+          }
+        ],
+        "substitution": false
+      },
+      {
+        "className": "11-В",
+        "entries": [
+          {
+            "subject": "Тестовий предмет 7",
+            "teacher": "Викладач 7 (DEMO)",
+            "room": "D7",
+            "subgroup": "1"
+          },
+          {
+            "subject": "Тестовий предмет 7",
+            "teacher": "Викладач 7 (DEMO)",
+            "room": "D7",
+            "subgroup": "2"
+          }
+        ],
+        "substitution": false
+      },
+      {
+        "className": "11-Г",
+        "entries": [
+          {
+            "subject": "Тестовий предмет 8",
+            "teacher": "Викладач 8 (DEMO)",
+            "room": "D8",
+            "subgroup": "1"
+          },
+          {
+            "subject": "Тестовий предмет 8",
+            "teacher": "Викладач 8 (DEMO)",
+            "room": "D8",
+            "subgroup": "2"
+          }
+        ],
+        "substitution": false
+      }
+    ],
+    "phase": "LESSON",
+    "lesson": 1,
+    "in_lesson": true,
+    "break_time": false,
+    "after_school": false,
+    "seconds_to_lesson_end": 2100,
+    "lesson_duration_seconds": 2700,
+    "seconds_to_next_lesson": 0,
+    "seconds_into_break": 0,
+    "message": ""
+  },
+  "weather": {
+    "available": false
+  },
+  "duty": {
+    "enabled": false
+  }
+}

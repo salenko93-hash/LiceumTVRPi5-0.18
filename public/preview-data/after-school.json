@@ -1,0 +1,39 @@
+{
+  "now": "2026-09-07T18:00:00+03:00",
+  "date": "07.09.2026",
+  "clock": "18:00:00",
+  "mode": "NORMAL",
+  "schedule": {
+    "date": "2026-09-07",
+    "day_label": "ПОНЕДІЛОК",
+    "week": {
+      "numerator": false,
+      "label": "ЗНАМЕННИК",
+      "next_label": "ЧИСЕЛЬНИК",
+      "paused": false,
+      "reason": "academic_week",
+      "week_offset": 1,
+      "academic_week_index": 1,
+      "academic_week_number": 2,
+      "calendar_week_offset": 1,
+      "monday": "2026-09-07"
+    },
+    "shelter": false,
+    "rows": [],
+    "phase": "AFTER_SCHOOL",
+    "lesson": 7,
+    "in_lesson": false,
+    "break_time": false,
+    "after_school": true,
+    "seconds_to_lesson_end": 0,
+    "seconds_to_next_lesson": 0,
+    "seconds_into_break": 0,
+    "message": "Заняття завершено"
+  },
+  "weather": {
+    "available": false
+  },
+  "duty": {
+    "enabled": false
+  }
+}

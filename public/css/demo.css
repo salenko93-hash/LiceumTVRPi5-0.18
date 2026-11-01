@@ -1,0 +1,12 @@
+/* Control chrome only. Table geometry, type, colours and safety styles are shared. */
+body { cursor: auto; }
+#demoCanvas { position: fixed; inset: 0; z-index: 0; isolation: isolate; }
+#demoControls, #demoOpen, #demoBadge, #demoError { position: fixed; z-index: 10; font-family: Arial, sans-serif; }
+#demoControls { top: 0; left: 50%; transform: translateX(-50%); display: flex; align-items: center; justify-content: center; gap: 10px; padding: 4px 12px; max-width: 100%; background: #071b30; border: 1px solid #54738e; border-radius: 0 0 8px 8px; font-size: 13px; white-space: nowrap; }
+#demoControls strong { color: #ffd166; }
+#demoControls select, #demoControls button, #demoOpen { font: 600 13px Arial, sans-serif; color: #fff; background: #24485e; border: 1px solid #7898aa; border-radius: 5px; padding: 5px 8px; cursor: pointer; }
+#demoControls select:focus-visible, #demoControls button:focus-visible, #demoOpen:focus-visible { outline: 3px solid #ffd166; outline-offset: 2px; }
+#demoOpen { right: 12px; top: 4px; }
+#demoBadge { left: 40px; bottom: 5px; padding: 5px 10px; color: #ffd166; background: #071b30; border: 1px solid #ffd166; border-radius: 5px; font-size: 14px; font-weight: 700; letter-spacing: .5px; }
+#demoError { inset: 40% 10% auto; text-align: center; font-size: 26px; color: #fff3c4; background: #422006; padding: 30px; }
+@media (max-width: 1000px) { #demoControls { flex-wrap: wrap; white-space: normal; width: 100%; gap: 6px; } #demoControls > span { display: none; } #demoBadge { left: 12px; font-size: 12px; } }
