@@ -1,0 +1,63 @@
+name: Isolated installer and systemd integration
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - .github/workflows/installer-integration.yml
+      - scripts/preinstall_backup.sh
+      - scripts/systemd/50-lyceumtv-hardening.conf
+      - tests/test_preinstall_backup.py
+      - tests/test_systemd_runtime.py
+permissions:
+  contents: read
+jobs:
+  isolated-linux:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      PYTHONDONTWRITEBYTECODE: '1'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install test dependencies
+        run: python -m pip install -r requirements.txt
+      - name: Backup script in disposable systemd chroots
+        run: |
+          test "$(ps -p 1 -o comm=)" = systemd
+          test_python="$(python -c 'import sys; print(sys.executable)')"
+          sudo env LYCEUMTV_BACKUP_INTEGRATION=1 PYTHONDONTWRITEBYTECODE=1 PYTHONPATH="$GITHUB_WORKSPACE/server:$GITHUB_WORKSPACE/tests" \
+            "$test_python" -B -m unittest test_preinstall_backup -v
+      - name: Effective systemd sandbox and local monitoring helpers
+        run: |
+          test_python="$(python -c 'import sys; print(sys.executable)')"
+          sandbox_root="$(sudo mktemp -d /opt/lyceumtv-sandbox.XXXXXXXX)"
+          [[ "$sandbox_root" =~ ^/opt/lyceumtv-sandbox\.[A-Za-z0-9]{8}$ ]]
+          trap 'sudo rm -rf -- "$sandbox_root"' EXIT
+          sudo chown "$(id -un):$(id -gn)" "$sandbox_root"
+          cp -a server tests data scripts "$sandbox_root/"
+          properties=()
+          while IFS= read -r entry || [[ -n "$entry" ]]; do
+            [[ -z "$entry" || "$entry" == \#* || "$entry" == \[* ]] && continue
+            properties+=("--property=$entry")
+          done < scripts/systemd/50-lyceumtv-hardening.conf
+          sudo systemd-run --wait --pipe --collect --unit="lyceumtv-sandbox-test-$GITHUB_RUN_ID" \
+            "${properties[@]}" \
+            --property="User=$(id -un)" \
+            --property="WorkingDirectory=$sandbox_root" \
+            --property=NoNewPrivileges=true \
+            --property=PrivateTmp=true \
+            --property=ProtectHome=true \
+            --property=ProtectSystem=strict \
+            --property=UMask=0077 \
+            --property=TasksMax=128 \
+            --property=MemoryMax=768M \
+            --property="ReadWritePaths=$sandbox_root" \
+            --setenv=LYCEUMTV_SANDBOX_TEST=1 \
+            --setenv=PYTHONDONTWRITEBYTECODE=1 \
+            --setenv="PYTHONPATH=$sandbox_root/server:$sandbox_root/tests" \
+            "$test_python" -B -m unittest test_systemd_runtime.SystemdRuntimeTests.test_effective_sandbox_and_monitor_helpers -v
