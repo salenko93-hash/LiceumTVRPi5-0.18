@@ -2,6 +2,7 @@
 import os
 from pathlib import Path
 import shutil
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -49,3 +50,14 @@ class InstallStorageTests(unittest.TestCase):
     def test_symlink_directory_refused(self):
         self.root.symlink_to(Path(self.tmp.name),target_is_directory=True)
         with self.assertRaises(ValueError): self.prepare()
+
+    def test_fresh_backend_refuses_existing_install_before_package_changes(self):
+        self.root.mkdir();(self.root/'server').mkdir();(self.root/'server/app.py').write_text('existing')
+        staging=Path(self.tmp.name)/'package/scripts';staging.mkdir(parents=True)
+        script=staging/'install.sh'
+        script.write_text((ROOT/'scripts/install.sh').read_text().replace('INSTALL_DIR="/opt/lyceumtv"','INSTALL_DIR="'+str(self.root)+'"'))
+        binary=Path(self.tmp.name)/'bin';binary.mkdir();calls=Path(self.tmp.name)/'commands'
+        sudo=binary/'sudo';sudo.write_text('#!/bin/sh\necho unexpected >> "'+str(calls)+'"\nexit 99\n');sudo.chmod(0o755)
+        result=subprocess.run(['bash',str(script)],env={**os.environ,'PATH':str(binary)+os.pathsep+os.environ['PATH'],'LYCEUMTV_COORDINATED_INSTALL':'1'},capture_output=True,text=True)
+        self.assertNotEqual(result.returncode,0);self.assertIn('code transaction',result.stderr)
+        self.assertFalse(calls.exists(),'existing installation must be rejected before apt or any sudo mutation')

@@ -17,6 +17,7 @@ GROUP_NAME="$(id -gn)"
 INSTALL_DIR="/opt/lyceumtv"
 APP_USER="lyceumtv"
 KIOSK_USER="lyceumtv-kiosk"
+[[ ! -f "$INSTALL_DIR/server/app.py" ]] || { echo 'Existing installations must use the code transaction, not full provisioning.' >&2; exit 1; }
 KIOSK_WAS_ACTIVE="$(systemctl is-active lyceumtv-kiosk.service 2>/dev/null || true)"
 PI_IP="${1:-192.168.0.18}"
 python3 -c 'import ipaddress,sys; ipaddress.IPv4Address(sys.argv[1])' "$PI_IP"
@@ -33,7 +34,6 @@ if ! command -v chromium >/dev/null 2>&1 && ! command -v chromium-browser >/dev/
 fi
 
 echo "[2/8] Preparing fresh service accounts and new directories..."
-[[ ! -f "$INSTALL_DIR/server/app.py" ]] || { echo 'Existing installations must use the code transaction, not full provisioning.' >&2; exit 1; }
 for account in "$APP_USER" "$KIOSK_USER"; do
   if ! id "$account" >/dev/null 2>&1; then
     sudo useradd --system --user-group --home-dir "/var/lib/$account" --create-home --shell /usr/sbin/nologin "$account"
