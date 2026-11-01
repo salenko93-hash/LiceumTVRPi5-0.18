@@ -3,10 +3,18 @@ import argparse
 import ast
 import hashlib
 import json
+import os
 from pathlib import Path, PurePosixPath, PureWindowsPath
 import platform
 import subprocess
 import sys
+
+LOCAL_METADATA = {'.idea', '.vscode', '.git', '__pycache__'}
+
+
+def local_metadata(name):
+    parts=PurePosixPath(name).parts
+    return bool(parts) and (parts[0] in LOCAL_METADATA or parts[-1] in {'.DS_Store','Thumbs.db'})
 
 
 def verify(root):
@@ -16,11 +24,14 @@ def verify(root):
         raise ValueError('Empty or invalid release manifest')
     required = {'server/engine.py', 'public/js/air-raid-display.js', 'public/css/air-raid-display.css',
                 'scripts/install.sh', 'scripts/preinstall_backup.sh', 'scripts/preinstall_system_backup.sh', 'scripts/install_air_raid.sh',
-                'scripts/release_preflight.py', 'VERIFY_PROJECT.py'}
+                'scripts/release_preflight.py', 'VERIFY_PROJECT.py', 'scripts/installer.py',
+                'scripts/installer_upgrade.py', 'scripts/runtime_storage.py', 'scripts/installer_launcher.ps1'}
     if not required <= manifest.keys():
         raise ValueError('Incomplete air-raid release')
     for name, expected in manifest.items():
         p = PurePosixPath(name)
+        if local_metadata(name):
+            raise ValueError('Local metadata must not be listed in release: ' + name)
         if p.is_absolute() or PureWindowsPath(name).drive or '..' in p.parts or '\\' in name:
             raise ValueError('Unsafe manifest path: ' + name)
         path = root / name
@@ -29,6 +40,8 @@ def verify(root):
         if hashlib.sha256(path.read_bytes()).hexdigest() != expected:
             raise ValueError('SHA-256 mismatch: ' + name)
     for path in root.rglob('*'):
+        if local_metadata(path.relative_to(root).as_posix()):
+            continue
         if path.is_symlink():
             raise ValueError('Symlink in release: ' + str(path))
         if path.is_file() and '__pycache__' not in path.parts and path.name != 'PACKAGE_SHA256.json':
@@ -41,15 +54,11 @@ def verify(root):
 
 
 def target_rpi():
-    if sys.platform != 'linux' or platform.machine() not in {'aarch64', 'arm64'}:
-        raise ValueError('Requires Linux ARM64 Raspberry Pi 5')
-    model = Path('/proc/device-tree/model').read_text().rstrip('\0')
-    if 'Raspberry Pi 5' not in model:
-        raise ValueError('Target is not Raspberry Pi 5: ' + model)
-    subprocess.run(['systemctl', '--version'], check=True, stdout=subprocess.DEVNULL)
-    if Path('/opt/lyceumtv/data/ota_pending').exists():
-        raise ValueError('Pending OTA/recovery: installation refused')
-    print('PASS: Raspberry Pi 5 ARM64 target; no pending OTA')
+    from installer import diagnose
+    report=diagnose(admin=os.environ.get('SUDO_USER','admin'))
+    print(json.dumps(report,ensure_ascii=False))
+    if not report['ok']:
+        raise ValueError('Target diagnostics failed; see all reported issues')
 
 
 def main():

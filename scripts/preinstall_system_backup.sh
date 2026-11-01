@@ -2,9 +2,9 @@
 # Companion to the consistent /opt backup: preserve installer-owned system files.
 set -Eeuo pipefail
 [[ $EUID -eq 0 ]] || { echo 'Run with sudo' >&2; exit 1; }
-[[ -d /opt/lyceumtv ]] || { echo 'No previous system installation.'; exit 0; }
 umask 077
-install -d -o root -g root -m 700 /var/backups/lyceumtv
+if [[ ! -e /var/backups/lyceumtv ]]; then install -d -o root -g root -m 700 /var/backups/lyceumtv; fi
+[[ ! -L /var/backups/lyceumtv && $(stat -c %a /var/backups/lyceumtv) == 700 && $(stat -c %u /var/backups/lyceumtv) == 0 ]] || { echo 'Unsafe backup directory; review required.' >&2; exit 1; }
 paths=()
 shopt -s nullglob
 for path in /etc/systemd/system/lyceumtv* /etc/lyceumtv /etc/nginx \
@@ -19,6 +19,7 @@ for path in /etc/systemd/system/lyceumtv* /etc/lyceumtv /etc/nginx \
 done
 [[ ${#paths[@]} -gt 0 ]] || { echo 'No previous system files to snapshot.'; exit 0; }
 partial="$(mktemp /var/backups/lyceumtv/system-before-air-raid-XXXXXXXX.tar.gz.partial)"
+trap 'rm -f -- "$partial"' EXIT
 tar -czf "$partial" -C / "${paths[@]}"
 gzip -t "$partial"
 tar -tzf "$partial" >/dev/null

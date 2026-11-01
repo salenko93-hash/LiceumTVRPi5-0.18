@@ -1,153 +1,51 @@
-"""Run the actual storage/migration stage as an unprivileged application user."""
-
-import json
+"""New-directory preparation never repairs or rewrites existing production data."""
 import os
 from pathlib import Path
 import shutil
-import subprocess
+import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
-ROOT = Path(__file__).resolve().parents[1]
+ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0,str(ROOT/'scripts'))
+import runtime_storage
 
-
-@unittest.skipIf(
-    not hasattr(os, "geteuid") or os.geteuid() == 0 or not shutil.which("bash"),
-    "requires a normal POSIX user and bash to exercise permission failures",
-)
+@unittest.skipUnless(hasattr(os,'geteuid') and os.geteuid()!=0,'requires nonroot POSIX permissions')
 class InstallStorageTests(unittest.TestCase):
     def setUp(self):
-        self.tmp = tempfile.TemporaryDirectory()
-        self.addCleanup(self.tmp.cleanup)
-        self.root = Path(self.tmp.name) / "app"
-        (self.root / "data").mkdir(parents=True)
-        shutil.copytree(ROOT / "data/default", self.root / "data/default")
-        shutil.copy2(
-            ROOT / "data/config.example.json", self.root / "data/config.example.json"
-        )
-        (self.root / "public").mkdir()
-        (self.root / "server").mkdir()
-        shutil.copy2(
-            ROOT / "server/runtime_data.py", self.root / "server/runtime_data.py"
-        )
-        shutil.copy2(
-            ROOT / "server/install_config.py", self.root / "server/install_config.py"
-        )
-        (self.root / "scripts").mkdir()
-        (self.root / "scripts/install.sh").write_text("#!/bin/bash\n")
-        self.staging = Path(self.tmp.name) / "saved"
-        self.staging.mkdir()
-        script = (ROOT / "scripts/install.sh").read_text()
-        # The real sudo restore has already run; exercise all following storage operations.
-        self.stage = script[
-            script.index(
-                "# Prepare application-owned storage before config and calendar migrations."
-            ) :
-        ]
-        self.stage = self.stage.split("# The network service has no SSH identity", 1)[0]
-        self.calendar_code = script.split("<<'PYCAL'\n", 1)[1].split("\nPYCAL", 1)[0]
-
-    def run_stage(self):
-        # Emulate privilege only for operations on this user's own temporary files.
-        # Real installation uses sudo for files owned by root/other users.
-        shell = 'INSTALL_DIR=$1; TMP_CFG=$2; USER_NAME=$(id -un); GROUP_NAME=$(id -gn); sudo(){ "$@"; };\n'
-        result = subprocess.run(
-            [
-                "bash",
-                "-eu",
-                "-c",
-                shell + self.stage,
-                "test-install",
-                str(self.root),
-                str(self.staging),
-            ],
-            capture_output=True,
-            text=True,
-        )
-        self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
-
-    def test_fresh_install_creates_writable_runtime_storage(self):
-        self.run_stage()
-        for directory in ("data/current", "data/backups", "data/logs", "public/media"):
-            self.assertTrue(os.access(self.root / directory, os.W_OK), directory)
-        self.assertEqual((self.root / "data/config.json").stat().st_mode & 0o777, 0o600)
-        self.assertEqual((self.root / "data/smart_ops.json").stat().st_uid, os.getuid())
-        for name in (
-            "calendar.json",
-            "schedule_numerator.json",
-            "schedule_denominator.json",
-        ):
-            self.assertTrue(os.access(self.root / "data/current" / name, os.W_OK))
-
-    def test_read_only_upgrade_preserves_config_media_and_live_schedules(self):
-        shutil.copytree(self.root / "data/default", self.root / "data/current")
-        calendar = self.root / "data/current/calendar.json"
-        calendar.write_text(
-            json.dumps({"source": "структура навчального року", "old": True})
-        )
-        calendar.chmod(0o444)
-        import sys
-
-        failed = subprocess.run(
-            [
-                sys.executable,
-                "-c",
-                self.calendar_code,
-                str(calendar),
-                str(self.root / "data/default/calendar.json"),
-            ],
-            capture_output=True,
-            text=True,
-        )
-        self.assertNotEqual(failed.returncode, 0)
-        self.assertIn("PermissionError", failed.stderr)
-        saved = {
-            "slideshow_music_url": "/media/keep.mp3",
-            "slideshow_title": "Keep title",
-            "slideshow_volume_percent": 42,
-            "mobile_public_url": "https://school.example/mobile/",
-        }
-        (self.root / "data/config.json").write_text(json.dumps(saved))
-        (self.staging / "config.json").write_text(json.dumps(saved))
-        schedules = {
-            p.name: p.read_bytes()
-            for p in (self.root / "data/current").glob("*numerator.json")
-        }
-        (self.root / "data/smart_ops.json").write_text('{"media":[{"id":"keep"}]}')
-        (self.root / "public/media").mkdir()
-        media = self.root / "public/media/keep.mp3"
-        media.write_bytes(b"keep uploaded audio")
-        for path in (self.root / "data").rglob("*"):
-            if path.is_file():
-                path.chmod(0o444)
-        for path in sorted((self.root / "data").rglob("*"), reverse=True):
-            if path.is_dir():
-                path.chmod(0o555)
-        (self.root / "data").chmod(0o555)
-        self.run_stage()
-        self.assertEqual(
-            calendar.read_bytes(),
-            (self.root / "data/default/calendar.json").read_bytes(),
-        )
-        current = json.loads((self.root / "data/config.json").read_text())
-        for key, value in saved.items():
-            self.assertEqual(current[key], value)
-        self.assertGreaterEqual(len(current["admin_key"]), 32)
-        self.assertEqual(media.read_bytes(), b"keep uploaded audio")
-        self.assertEqual(
-            json.loads((self.root / "data/smart_ops.json").read_text()),
-            {"media": [{"id": "keep"}]},
-        )
-        for name, raw in schedules.items():
-            self.assertEqual((self.root / "data/current" / name).read_bytes(), raw)
-        self.assertEqual((self.root / "data/config.json").stat().st_mode & 0o777, 0o600)
-
-    def test_custom_calendar_is_preserved_after_permissions_repair(self):
-        (self.root / "data/current").mkdir()
-        calendar = self.root / "data/current/calendar.json"
-        raw = b'{"source":"custom-import.xlsx","custom":true}'
-        calendar.write_bytes(raw)
-        calendar.chmod(0o444)
-        self.run_stage()
-        self.assertEqual(calendar.read_bytes(), raw)
-        self.assertTrue(os.access(calendar, os.W_OK))
+        self.tmp=tempfile.TemporaryDirectory();self.addCleanup(self.tmp.cleanup)
+        self.root=Path(self.tmp.name)/'app'
+    def prepare(self):
+        with patch.object(runtime_storage.os,'chown') as owner:
+            runtime_storage.prepare(self.root,os.getuid(),os.getgid())
+            return owner.call_count
+    def fixture(self):
+        self.prepare()
+        shutil.copytree(ROOT/'data/default',self.root/'data/default')
+        shutil.copy2(ROOT/'data/config.example.json',self.root/'data/config.example.json')
+        for name in ('runtime_data.py','install_config.py'):
+            shutil.copy2(ROOT/'server'/name,self.root/'server'/name)
+    def test_clean_install_and_idempotent_directory_creation(self):
+        self.assertGreater(self.prepare(),0);self.assertEqual(self.prepare(),0)
+        for rel,mode in runtime_storage.DIRECTORIES.items():
+            self.assertEqual((self.root/rel).stat().st_mode & 0o777,mode)
+    def test_wrong_existing_owner_blocks_entire_plan(self):
+        self.root.mkdir()
+        with self.assertRaises(PermissionError): runtime_storage.prepare(self.root,os.getuid()+1,os.getgid())
+        self.assertEqual(list(self.root.iterdir()),[])
+    def test_insecure_existing_mode_preserved_and_refused(self):
+        self.root.mkdir();self.root.chmod(0o777)
+        with self.assertRaises(PermissionError): self.prepare()
+        self.assertEqual(self.root.stat().st_mode & 0o777,0o777)
+    def test_initialize_preserves_calendar_config_media_on_rerun(self):
+        self.fixture();runtime_storage.initialize(self.root)
+        calendar=self.root/'data/current/calendar.json';calendar.write_bytes(b'{"custom":true}');calendar.chmod(0o444)
+        config=self.root/'data/config.json';original=config.read_bytes()
+        media=self.root/'public/media/test.mp3';media.write_bytes(b'keep')
+        runtime_storage.initialize(self.root)
+        self.assertEqual(calendar.read_bytes(),b'{"custom":true}');self.assertEqual(config.read_bytes(),original)
+        self.assertEqual(media.read_bytes(),b'keep');self.assertEqual(config.stat().st_mode & 0o777,0o600)
+    def test_symlink_directory_refused(self):
+        self.root.symlink_to(Path(self.tmp.name),target_is_directory=True)
+        with self.assertRaises(ValueError): self.prepare()

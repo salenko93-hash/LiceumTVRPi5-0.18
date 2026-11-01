@@ -20,7 +20,8 @@ class ReleasePreflightTests(unittest.TestCase):
         self.manifest = {}
         for name in ('server/engine.py', 'public/js/air-raid-display.js', 'public/css/air-raid-display.css',
                      'scripts/install.sh', 'scripts/preinstall_backup.sh', 'scripts/preinstall_system_backup.sh', 'scripts/install_air_raid.sh',
-                     'scripts/release_preflight.py', 'VERIFY_PROJECT.py'):
+                     'scripts/release_preflight.py', 'VERIFY_PROJECT.py', 'scripts/installer.py',
+                     'scripts/installer_upgrade.py', 'scripts/runtime_storage.py', 'scripts/installer_launcher.ps1'):
             path = self.root / name
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text('pass\n' if name.endswith('.py') else 'fixture\n')
@@ -45,6 +46,12 @@ class ReleasePreflightTests(unittest.TestCase):
         (self.root / 'production-config.json').write_text('{}')
         with self.assertRaisesRegex(ValueError, 'Unlisted'):
             preflight.verify(self.root)
+
+    def test_ide_metadata_ignored_but_not_trusted_by_manifest(self):
+        path=self.root/'.idea/.gitignore';path.parent.mkdir();path.write_text('local IDE metadata')
+        preflight.verify(self.root)
+        self.manifest['.idea/.gitignore']=hashlib.sha256(path.read_bytes()).hexdigest();self.save()
+        with self.assertRaises(ValueError): preflight.verify(self.root)
 
     def test_manifest_path_escape_is_rejected(self):
         for name in ('../escape', 'C:/escape', '/escape', 'dir\\escape'):

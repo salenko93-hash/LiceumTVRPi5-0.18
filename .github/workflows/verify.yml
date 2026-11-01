@@ -7,6 +7,13 @@ on:
 permissions:
   contents: read
 jobs:
+  powershell:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Windows launcher safety and failure tests
+        shell: pwsh
+        run: ./tests/test_installer_powershell.ps1
   verify:
     runs-on: ubuntu-latest
     timeout-minutes: 20

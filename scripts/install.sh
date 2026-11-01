@@ -6,6 +6,11 @@ if [[ $EUID -eq 0 ]]; then
   exit 1
 fi
 
+[[ "${LYCEUMTV_COORDINATED_INSTALL:-}" == 1 ]] || {
+  echo 'Use INSTALL_AIR_RAID_RPI5.ps1 or scripts/install_air_raid.sh (verified backup required).' >&2
+  exit 1
+}
+
 ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 USER_NAME="$(id -un)"
 GROUP_NAME="$(id -gn)"
@@ -27,144 +32,44 @@ if ! command -v chromium >/dev/null 2>&1 && ! command -v chromium-browser >/dev/
     || sudo DEBIAN_FRONTEND=noninteractive apt-get install -y chromium-browser
 fi
 
-echo "[2/8] Preserving live settings..."
-sudo mkdir -p "$INSTALL_DIR"
-# Stop writers and the old privileged timer before code/ownership migration.
-sudo systemctl stop lyceumtv-watchdog.timer lyceumtv-watchdog.service lyceumtv-backup.timer lyceumtv-mirror.timer lyceumtv.service 2>/dev/null || true
-if ! id "$APP_USER" >/dev/null 2>&1; then
-  sudo useradd --system --user-group --home-dir /var/lib/lyceumtv --create-home --shell /usr/sbin/nologin "$APP_USER"
-fi
-if ! id "$KIOSK_USER" >/dev/null 2>&1; then
-  sudo useradd --user-group --home-dir /var/lib/lyceumtv-kiosk --create-home --shell /usr/sbin/nologin "$KIOSK_USER"
-fi
-KIOSK_UID="$(id -u "$KIOSK_USER")"
+echo "[2/8] Preparing fresh service accounts and new directories..."
+[[ ! -f "$INSTALL_DIR/server/app.py" ]] || { echo 'Existing installations must use the code transaction, not full provisioning.' >&2; exit 1; }
 for account in "$APP_USER" "$KIOSK_USER"; do
+  if ! id "$account" >/dev/null 2>&1; then
+    sudo useradd --system --user-group --home-dir "/var/lib/$account" --create-home --shell /usr/sbin/nologin "$account"
+  fi
   if [[ $(id -u "$account") -eq 0 ]] || id -nG "$account" | tr ' ' '\n' | grep -Eq '^(root|sudo|wheel|adm|docker|lxd|disk|shadow)$'; then
-    echo "Refusing privileged service account: $account" >&2
-    exit 1
+    echo "Refusing privileged service account: $account" >&2; exit 1
   fi
-  if [[ $(getent passwd "$account" | cut -d: -f7) != /usr/sbin/nologin ]]; then
-    echo "Service account must have nologin shell: $account" >&2
-    exit 1
-  fi
+  [[ $(getent passwd "$account" | cut -d: -f7) == /usr/sbin/nologin ]] || { echo 'Service account shell needs security review.' >&2; exit 1; }
 done
-sudo chmod 700 /var/lib/lyceumtv /var/lib/lyceumtv-kiosk
-# Validate the existing secret configuration before replacing any application files.
-sudo python3 "$ROOT/server/install_config.py" --check "$INSTALL_DIR/data/config.json"
-sudo python3 - "$INSTALL_DIR/data/ota_pending" <<'PYOTA'
-import json, pathlib, sys, time
-path=pathlib.Path(sys.argv[1])
-if path.exists():
-    try: value=json.loads(path.read_text())
-    except ValueError: value=None
-    if isinstance(value,dict) and value.get("schema")==1:
-        raise SystemExit("Спочатку завершіть або відновіть поточне OTA-оновлення")
-    path.rename(path.with_name("ota_pending.legacy-"+str(time.time_ns())))
-PYOTA
-TMP_CFG="$(mktemp -d)"
-if [[ -f "$INSTALL_DIR/data/config.json" ]]; then
-  sudo cp "$INSTALL_DIR/data/config.json" "$TMP_CFG/config.json"
-fi
-if [[ -f "$INSTALL_DIR/data/runtime.json" ]]; then
-  sudo cp "$INSTALL_DIR/data/runtime.json" "$TMP_CFG/runtime.json"
-fi
-for f in control.json calendar_override.json bells_override.json screens.json; do
-  if [[ -f "$INSTALL_DIR/data/$f" ]]; then
-    sudo cp "$INSTALL_DIR/data/$f" "$TMP_CFG/$f"
-  fi
-done
+KIOSK_UID="$(id -u "$KIOSK_USER")"
+sudo python3 "$ROOT/scripts/runtime_storage.py" --prepare --root "$INSTALL_DIR"
 
-echo "[3/8] Installing LyceumTV files..."
-DEFAULT_DATA_RULE='--include=data/default/***'
-# Private local initial/pinned schedules are working data too, never replace them.
-if sudo test -d "$INSTALL_DIR/data/default"; then
-  DEFAULT_DATA_RULE='--exclude=data/default/***'
-fi
-sudo rsync -a --delete \
-  --exclude '.git' \
-  --include 'data/' \
-  "$DEFAULT_DATA_RULE" \
-  --include 'data/config.example.json' \
-  --exclude 'data/***' \
-  --exclude 'public/media/' \
-  --exclude 'docs/' \
-  --exclude 'tests/' \
-  --exclude 'tools/' \
-  --exclude 'cloud/' \
+echo "[3/8] Installing verified software; preserving existing data..."
+sudo rsync -a --no-perms --delete --chown="$APP_USER:$APP_USER" \
+  --exclude '.git' --exclude '.idea' --exclude '.vscode' --exclude '__pycache__' \
+  --exclude '.DS_Store' --exclude 'Thumbs.db' \
+  --exclude 'data/' --exclude 'public/media/' --exclude 'docs/' \
+  --exclude 'tests/' --exclude 'tools/' --exclude 'cloud/' \
   "$ROOT/" "$INSTALL_DIR/"
-
-if [[ -f "$TMP_CFG/config.json" ]]; then
-  sudo cp "$TMP_CFG/config.json" "$INSTALL_DIR/data/config.json"
+sudo install -o "$APP_USER" -g "$APP_USER" -m 644 "$ROOT/data/config.example.json" "$INSTALL_DIR/data/config.example.json"
+if ! sudo test -e "$INSTALL_DIR/data/default"; then
+  sudo install -d -o "$APP_USER" -g "$APP_USER" -m 700 "$INSTALL_DIR/data/default"
+  sudo rsync -r --chown="$APP_USER:$APP_USER" "$ROOT/data/default/" "$INSTALL_DIR/data/default/"
 fi
-if [[ -f "$TMP_CFG/runtime.json" ]]; then
-  sudo cp "$TMP_CFG/runtime.json" "$INSTALL_DIR/data/runtime.json"
-fi
-for f in control.json calendar_override.json bells_override.json screens.json; do
-  if [[ -f "$TMP_CFG/$f" ]]; then
-    sudo cp "$TMP_CFG/$f" "$INSTALL_DIR/data/$f"
-  fi
+for helper in "$ROOT"/scripts/*.sh; do
+  sudo install -o "$APP_USER" -g "$APP_USER" -m 755 "$helper" "$INSTALL_DIR/scripts/"
 done
-
-
-# Prepare application-owned storage before config and calendar migrations.
-# Existing live files can belong to root or to the previous deployment user.
-sudo chown -R "$USER_NAME:$GROUP_NAME" "$INSTALL_DIR"
-sudo chmod -R u+rwX "$INSTALL_DIR/data"
-if [[ -f "$INSTALL_DIR/data/config.json" ]]; then
-  sudo chmod 600 "$INSTALL_DIR/data/config.json"
-fi
-
-python3 "$INSTALL_DIR/server/install_config.py" "$INSTALL_DIR/data/config.json" "$INSTALL_DIR/data/config.example.json"
-
-mkdir -p "$INSTALL_DIR/data/current" "$INSTALL_DIR/data/backups" "$INSTALL_DIR/data/logs"
-python3 "$INSTALL_DIR/server/runtime_data.py" "$INSTALL_DIR"
-
-# Migrate only the built-in academic calendar to the corrected
-# learning-process structure. Custom/imported calendars and local overrides
-# are preserved.
-python3 - "$INSTALL_DIR/data/current/calendar.json" "$INSTALL_DIR/data/default/calendar.json" <<'PYCAL'
-import json, os, shutil, sys
-live, corrected = sys.argv[1], sys.argv[2]
-should_replace = not os.path.exists(live)
-if os.path.exists(live):
-    try:
-        with open(live, "r", encoding="utf-8") as f:
-            obj = json.load(f)
-        source = str(obj.get("source", ""))
-        should_replace = (
-            not source
-            or "структура навчального року" in source
-            or "нова структура навчального року з чергуванням" in source
-        )
-    except Exception:
-        should_replace = True
-if should_replace and os.path.exists(corrected):
-    os.makedirs(os.path.dirname(live), exist_ok=True)
-    shutil.copy2(corrected, live)
-PYCAL
-if [[ ! -f "$INSTALL_DIR/data/smart_ops.json" && -f "$INSTALL_DIR/data/default/smart_ops.json" ]]; then
-  cp "$INSTALL_DIR/data/default/smart_ops.json" "$INSTALL_DIR/data/smart_ops.json"
-fi
-mkdir -p "$INSTALL_DIR/public/media"
-
-# Preserve all four live schedules across updates.
-# The initial install already populates missing schedules from data/default.
-# Never replace teacher-edited live schedules in a maintenance release.
-
-rm -rf "$TMP_CFG"
-# The network service has no SSH identity or sudo rights.
-sudo chown -R "$APP_USER:$APP_USER" "$INSTALL_DIR"
-sudo chmod 700 "$INSTALL_DIR/data"
-sudo chmod 755 "$INSTALL_DIR" "$INSTALL_DIR/scripts"
+sudo -u "$APP_USER" python3 -B "$INSTALL_DIR/scripts/runtime_storage.py" --initialize --root "$INSTALL_DIR"
+# No recursive chmod/chown, calendar migration or rewriting existing config.
 sudo install -d -o root -g root -m 755 /usr/local/lib/lyceumtv
 sudo install -o root -g root -m 755 "$ROOT/scripts/watchdog.sh" /usr/local/lib/lyceumtv/watchdog.sh
 sudo install -o root -g root -m 755 "$ROOT/scripts/launch-kiosk.sh" /usr/local/lib/lyceumtv/launch-kiosk.sh
 sudo install -o root -g root -m 755 "$ROOT/scripts/security_audit.sh" /usr/local/sbin/lyceumtv-security-audit
 sudo install -o root -g root -m 755 "$ROOT/scripts/show_keys.py" /usr/local/sbin/lyceumtv-show-keys
-sudo "$ROOT/scripts/configure_https.sh" "$PI_IP"
+sudo bash "$ROOT/scripts/configure_https.sh" "$PI_IP"
 sudo install -o "$USER_NAME" -g "$GROUP_NAME" -m 644 /etc/lyceumtv/tls/ca.crt "$HOME/lyceumtv-ca.crt"
-sudo chmod 600 "$INSTALL_DIR/data/config.json"
-sudo chmod +x "$INSTALL_DIR/scripts/"*.sh
 
 echo "[4/8] Preparing kiosk user..."
 for grp in video render input audio; do
@@ -172,7 +77,7 @@ for grp in video render input audio; do
     sudo usermod -aG "$grp" "$KIOSK_USER"
   fi
 done
-sudo "$ROOT/scripts/prepare-keyring-free-kiosk.sh" "$KIOSK_USER"
+sudo bash "$ROOT/scripts/prepare-keyring-free-kiosk.sh" "$KIOSK_USER"
 
 echo "[5/8] Installing systemd services..."
 sudo tee /etc/systemd/system/lyceumtv.service >/dev/null <<EOF
@@ -362,8 +267,7 @@ sudo systemctl enable --now lyceumtv-backup.timer
 sudo systemctl enable --now lyceumtv-mirror.timer
 
 echo "[8/8] Health check..."
-sleep 2
-curl -fsS --max-time 5 http://127.0.0.1:8080/api/health || true
+sudo -u "$APP_USER" python3 -B "$INSTALL_DIR/scripts/installer_upgrade.py" --root "$INSTALL_DIR" --health
 
 echo
 echo "LyceumTV 3.6.1 installed."

@@ -152,10 +152,21 @@ class SecurityUnitTests(unittest.TestCase):
         try:
             self.assertTrue(entered.wait(2))
             with socket.create_connection(server.server_address, timeout=3) as second:
-                second.sendall(b"GET / HTTP/1.0\r\n\r\n")
-                self.assertIn(b"503", second.recv(1024))
+                try:
+                    second.sendall(b"GET / HTTP/1.0\r\n\r\n")
+                    self.assertIn(b"503", second.recv(1024))
+                except (ConnectionAbortedError, ConnectionResetError):
+                    # Windows may reset an overloaded socket closed with unread input.
+                    # Linux must still deliver the explicit 503 response.
+                    if sys.platform != 'win32':
+                        raise
             release.set()
             self.assertIn(b"200", first.recv(1024))
+            self.assertTrue(server.slots.acquire(timeout=2))
+            server.slots.release()
+            with socket.create_connection(server.server_address, timeout=3) as third:
+                third.sendall(b"GET / HTTP/1.0\r\n\r\n")
+                self.assertIn(b"200", third.recv(1024))
         finally:
             release.set()
             first.close()

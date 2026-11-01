@@ -8,15 +8,21 @@ exec 9>/run/lyceumtv-preinstall-backup.lock
 flock -n 9 || { echo 'Another pre-install backup is running.' >&2; exit 1; }
 if [[ -d /opt/lyceumtv/data ]]; then
   # Same preparation lock as the running OTA implementation. Keep its owner.
-  install -d -m 700 -o "$(stat -c %u /opt/lyceumtv/data)" -g "$(stat -c %g /opt/lyceumtv/data)" /opt/lyceumtv/data/.locks
-  touch /opt/lyceumtv/data/.locks/update-prepare.lock
-  chown --reference=/opt/lyceumtv/data /opt/lyceumtv/data/.locks/update-prepare.lock
-  chmod 600 /opt/lyceumtv/data/.locks/update-prepare.lock
-  exec 8>/opt/lyceumtv/data/.locks/update-prepare.lock
+  if [[ ! -e /opt/lyceumtv/data/.locks ]]; then
+    install -d -m 700 -o "$(stat -c %u /opt/lyceumtv/data)" -g "$(stat -c %g /opt/lyceumtv/data)" /opt/lyceumtv/data/.locks
+  fi
+  [[ ! -L /opt/lyceumtv/data/.locks && $(stat -c %u /opt/lyceumtv/data/.locks) == $(stat -c %u /opt/lyceumtv/data) && $(stat -c %a /opt/lyceumtv/data/.locks) == 700 ]] || { echo 'Unsafe existing lock directory.' >&2; exit 1; }
+  if [[ ! -e /opt/lyceumtv/data/.locks/update-prepare.lock ]]; then
+    (set -o noclobber; : > /opt/lyceumtv/data/.locks/update-prepare.lock)
+    chown --reference=/opt/lyceumtv/data /opt/lyceumtv/data/.locks/update-prepare.lock
+  fi
+  [[ ! -L /opt/lyceumtv/data/.locks/update-prepare.lock && $(stat -c %u /opt/lyceumtv/data/.locks/update-prepare.lock) == $(stat -c %u /opt/lyceumtv/data) && $(stat -c %a /opt/lyceumtv/data/.locks/update-prepare.lock) == 600 ]] || { echo 'Unsafe existing OTA lock.' >&2; exit 1; }
+  exec 8<>/opt/lyceumtv/data/.locks/update-prepare.lock
   flock -n 8 || { echo 'OTA preparation is running; retry after it finishes.' >&2; exit 1; }
 fi
 [[ ! -e /opt/lyceumtv/data/ota_pending ]] || { echo 'Finish OTA/recovery before installation.' >&2; exit 1; }
-install -d -o root -g root -m 700 /var/backups/lyceumtv
+if [[ ! -e /var/backups/lyceumtv ]]; then install -d -o root -g root -m 700 /var/backups/lyceumtv; fi
+[[ ! -L /var/backups/lyceumtv && $(stat -c %a /var/backups/lyceumtv) == 700 && $(stat -c %u /var/backups/lyceumtv) == 0 ]] || { echo 'Unsafe existing backup directory.' >&2; exit 1; }
 units=(lyceumtv-watchdog.timer lyceumtv-backup.timer lyceumtv-mirror.timer
        lyceumtv-watchdog.service lyceumtv-backup.service lyceumtv-mirror.service lyceumtv.service)
 loaded=()

@@ -6,7 +6,7 @@
 TV Display: дві таблиці по чотири класи, поділ на групи, заміни, черговий клас,
 календар, погода та повноекранна повітряна тривога. DEMO використовує той самий
 рендерер із тестовими даними та не запускає звук. Версія інтерфейсу/релізу —
-4.0.0; сумісна внутрішня версія API — 3.6.1.
+4.0.1; сумісна внутрішня версія API — 3.6.1.
 
 ## Публічні дані
 
@@ -23,14 +23,14 @@ Raspberry Pi OS 64-bit, Raspberry Pi 5, Python 3.10+, SSH та звичайни�
 із sudo. До встановлення зробіть образ SD/диска й збережіть поза пристроєм.
 Використовуйте **версійний Release ZIP**, а не GitHub Source code ZIP.
 
-Для v4.0.0 на Pi:
+Для v4.0.1 на Pi:
 
 ```bash
-curl -fLO https://github.com/salenko93-hash/LiceumTVRPi5-0.18/releases/download/v4.0.0/LyceumTV-RPi5-v4.0.0.zip
-curl -fLO https://github.com/salenko93-hash/LiceumTVRPi5-0.18/releases/download/v4.0.0/LyceumTV-RPi5-v4.0.0.zip.sha256
-sha256sum -c LyceumTV-RPi5-v4.0.0.zip.sha256
-unzip LyceumTV-RPi5-v4.0.0.zip
-cd LyceumTV-RPi5-v4.0.0
+curl -fLO https://github.com/salenko93-hash/LiceumTVRPi5-0.18/releases/download/v4.0.1/LyceumTV-RPi5-v4.0.1.zip
+curl -fLO https://github.com/salenko93-hash/LiceumTVRPi5-0.18/releases/download/v4.0.1/LyceumTV-RPi5-v4.0.1.zip.sha256
+sha256sum -c LyceumTV-RPi5-v4.0.1.zip.sha256
+unzip LyceumTV-RPi5-v4.0.1.zip
+cd LyceumTV-RPi5-v4.0.1
 bash scripts/install_air_raid.sh 192.168.0.18
 ```
 
@@ -38,10 +38,10 @@ bash scripts/install_air_raid.sh 192.168.0.18
 `Get-FileHash`, потім виконайте `INSTALL_AIR_RAID_RPI5.ps1 -PiHost 192.168.0.18 -PiUser admin`.
 Вкажіть фактичну адресу/користувача свого Pi. Скрипт запитає INSTALL.
 
-До зупинки служб: перевірка SHA-256 усіх файлів, ARM64/Pi 5, відсутності OTA та
-тести. Далі обов'язковий verified backup `/opt/lyceumtv` і system snapshot,
-штатне встановлення та health-check. За наявності локального `data/default`
-інсталятор зберігає його. Автоматичного reboot немає.
+Перед встановленням виконайте -CheckOnly. Повна діагностика, політика безпечної
+підготовки, журналювання й recovery описані в [інструкції v4.0.1](docs/INSTALLER_V4_0_1.md).
+Оновлення використовує verified data backup та code transaction з автоматичним
+відкатом; повний provisioning виконується лише на чистій системі.
 
 Встановлення налаштовує службових користувачів, systemd, nginx/HTTPS і kiosk.
 Секрети створюються локально; отримати ключі ролей можна тільки через
@@ -60,7 +60,7 @@ journalctl -u lyceumtv-official-check.service --no-pager
 Окреме адміністративне застосування конкретної перевіреної версії:
 
 ```bash
-sudo -u lyceumtv python3 -B /opt/lyceumtv/server/official_updates.py apply --tag v4.0.0 --approve
+sudo -u lyceumtv python3 -B /opt/lyceumtv/server/official_updates.py apply --tag v4.0.1 --approve
 ```
 
 Updater приймає тільки Release assets цього репозиторію, перевіряє успішний
