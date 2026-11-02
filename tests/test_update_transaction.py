@@ -128,7 +128,7 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(update.version_at(self.root), "3.5.1")
         self.assertIsNone(update.read_state(self.root))
 
-    @unittest.skipUnless(sys.platform == "linux" and shutil.which("bash"), "requires native Linux bash/filesystem; Windows WSL launcher is insufficient")
+    @unittest.skipUnless(sys.platform != "win32" and shutil.which("bash"), "requires POSIX bash; run in WSL on Windows")
     def test_watchdog_never_accepts_a_pending_update_by_http_alone(self):
         import shlex
 
@@ -226,7 +226,7 @@ class UpdateTests(unittest.TestCase):
         self.assertEqual(update.version_at(self.root), "3.5.0")
         self.assertIsNone(update.read_state(self.root))
 
-    @unittest.skipUnless(sys.platform == 'linux', 'requires POSIX supervisor signals and child cleanup')
+    @unittest.skipIf(sys.platform == "win32", "requires POSIX SIGTERM cleanup; run in WSL on Windows")
     def test_supervisor_rolls_back_when_new_process_reports_wrong_version(self):
         app = self.source / "server/app.py"
         app.write_text(
@@ -284,7 +284,7 @@ class UpdateTests(unittest.TestCase):
                     process.kill()
                     process.wait()
 
-    @unittest.skipUnless(sys.platform == 'linux', 'requires POSIX supervisor signals and child cleanup')
+    @unittest.skipIf(sys.platform == "win32", "requires POSIX SIGTERM cleanup; run in WSL on Windows")
     def test_supervisor_completes_real_process_update(self):
         with socket.socket() as sock:
             sock.bind(("127.0.0.1", 0))
