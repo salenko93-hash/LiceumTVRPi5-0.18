@@ -33,6 +33,7 @@ from http_security import SecureHTTPMixin, BoundedHTTPServer
 from runtime_data import initialize_runtime_data
 from http_responses import ResponseMixin
 from version import VERSION
+from media_dashboard import load as load_media_dashboard, save as save_media_dashboard
 from content_store import (
     delete as delete_content,
     load_control,
@@ -231,6 +232,9 @@ class Handler(SecureHTTPMixin, ResponseMixin, BaseHTTPRequestHandler):
                 )
             token = pair_screen(sid, str(config.get("local_screen_token", "")))
             return self._send_json(200, {"ok": True, "token": token})
+
+        if path == "/api/media-dashboard":
+            return self._send_json(200, {"ok": True, "content": load_media_dashboard()})
 
         if path == "/api/state":
             return self._send_json(200, ENGINE.get_state())
@@ -948,6 +952,11 @@ class Handler(SecureHTTPMixin, ResponseMixin, BaseHTTPRequestHandler):
 
         try:
             body = self._read_json()
+
+            if path == "/api/admin/media-dashboard":
+                saved = save_media_dashboard(body.get("content", {}) if isinstance(body,dict) else {})
+                write_event("media_dashboard.save", "Медіаекран: оновлено контент", actor="admin")
+                return self._send_json(200, {"ok": True, "content": saved})
 
             if path == "/api/admin/config":
                 patch = body.get("config", body) if isinstance(body, dict) else {}

@@ -48,6 +48,7 @@
         <button type="button" data-tab="demo">DEMO / ПЕРЕГЛЯД</button>
         <button type="button" data-tab="import">XLSX ІМПОРТ</button>
         <button type="button" data-tab="content">КОНТЕНТ</button>
+        <button type="button" data-tab="media-dashboard">МЕДІАЕКРАН</button>
         <button type="button" data-tab="screens">ЕКРАНИ</button>
         <button type="button" data-tab="mobile">MOBILE / QR</button>
         <button type="button" data-tab="telegram">TELEGRAM</button>
@@ -489,6 +490,32 @@
               <div id="eventList" class="data-list"></div>
             </section>
           </div>
+        </section>
+
+        <section id="tab-media-dashboard" class="tab-page">
+          <section class="card wide">
+            <h2>МЕДІАЕКРАН · ГОЛОВНИЙ ІНФОРМАЦІЙНИЙ ПРОСТІР</h2>
+            <p>Редагуйте праві картки. Фото та відео використовуйте лише з медіатеки (/media/…). Розклади й сигнали тривоги не змінюються.</p>
+            <form id="mediaDashboardForm" class="editor-form">
+              <label>Головна подія — назва<input name="main_title" maxlength="120" placeholder="Наприклад: Тиждень науки" /></label>
+              <label>Опис головної події<textarea name="main_text" maxlength="360" rows="3"></textarea></label>
+              <label>Дата / місце<input name="main_meta" maxlength="140" /></label>
+              <div class="row">
+                <label>Оголошення<textarea name="announcements" maxlength="360" rows="4" placeholder="Кожен пункт — з нового рядка"></textarea></label>
+                <label>Сьогодні<textarea name="today" maxlength="360" rows="4"></textarea></label>
+              </div>
+              <label>Досягнення<textarea name="achievements" maxlength="360" rows="4"></textarea></label>
+              <div class="row">
+                <label>Тип медіа<select name="media_type"><option value="image">Фото</option><option value="video">Відео</option><option value="none">Без медіа</option></select></label>
+                <label>Локальна URL медіа<input name="media_url" maxlength="400" placeholder="/media/my-photo.jpg" /></label>
+              </div>
+              <label>Підпис до медіа<input name="media_caption" maxlength="140" /></label>
+              <div class="actions"><button type="submit">ЗБЕРЕГТИ МЕДІАЕКРАН</button>
+              <a href="/media-dashboard.html?demo=1" target="_blank" rel="noopener">ПЕРЕГЛЯНУТИ DEMO</a>
+              <a href="/media-dashboard.html" target="_blank" rel="noopener">ВІДКРИТИ МЕДІАЕКРАН</a></div>
+            </form>
+            <p id="mediaDashboardStatus" role="status" aria-live="polite"></p>
+          </section>
         </section>
 
         <section id="tab-screens" class="tab-page">
@@ -977,6 +1004,7 @@
       <div id="toast" class="toast hidden"></div>
       <script src="/js/auth.js"></script>
     <script src="/js/admin.js"></script>
+    <script src="/js/media-dashboard-admin.js"></script>
     </main>
   </body>
 </html>
