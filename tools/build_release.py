@@ -31,6 +31,8 @@ TOP_FILES = {
     "CHECK_RPI.ps1",
     "CHECK_SECURITY_RPI.ps1",
     "OPEN_ADMIN.ps1",
+    "START_DEMO_WINDOWS.bat",
+    "INSTALL_MEDIA_DASHBOARD_README.md",
 }
 DIRECTORIES = (
     "server",
