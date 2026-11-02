@@ -159,10 +159,10 @@ def run(nginx=None):
                 )
             with sync_playwright() as p:
                 browser = p.chromium.launch(
-                    executable_path=shutil.which("chromium")
-                    or shutil.which("chromium-browser")
-                    or shutil.which("google-chrome")
-                    or shutil.which("google-chrome-stable"),
+                    executable_path=shutil.which("google-chrome")
+                    or shutil.which("google-chrome-stable")
+                    or shutil.which("chromium")
+                    or shutil.which("chromium-browser"),
                     chromium_sandbox=True,
                 )
                 # TLS identity is verified above with the generated CA. Browser

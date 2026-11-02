@@ -142,11 +142,13 @@ def run():
                     },
                 }
                 with sync_playwright() as p:
+                    # Prefer the Chrome installed for CI's sandboxed Node tests.
+                    # A runner's unrelated Chromium may lack a usable sandbox.
                     executable = (
-                        shutil.which("chromium")
-                        or shutil.which("chromium-browser")
-                        or shutil.which("google-chrome")
+                        shutil.which("google-chrome")
                         or shutil.which("google-chrome-stable")
+                        or shutil.which("chromium")
+                        or shutil.which("chromium-browser")
                     )
                     browser = p.chromium.launch(
                         executable_path=executable,
