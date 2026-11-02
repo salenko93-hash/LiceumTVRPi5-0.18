@@ -159,9 +159,11 @@ def run(nginx=None):
                 )
             with sync_playwright() as p:
                 browser = p.chromium.launch(
-                    executable_path=shutil.which("chromium")
+                    executable_path=shutil.which("google-chrome")
+                    or shutil.which("google-chrome-stable")
+                    or shutil.which("chromium")
                     or shutil.which("chromium-browser"),
-                    args=["--no-sandbox"],
+                    chromium_sandbox=True,
                 )
                 # TLS identity is verified above with the generated CA. Browser
                 # trust bypass is confined to this disposable test context.
@@ -187,7 +189,8 @@ def run(nginx=None):
                 assert cookie["httpOnly"] and cookie["sameSite"] == "Strict"
                 assert cookie["secure"] == bool(nginx)
                 passed(
-                    "admin login uses HttpOnly/SameSite session; Secure over TLS; no stored role keys"
+                    "admin login uses HttpOnly/SameSite session; no stored role keys; "
+                    + ("Secure cookie verified over TLS" if nginx else "local HTTP cookie verified; TLS not tested")
                 )
                 opspage = context.new_page()
                 opspage.on("pageerror", lambda error: errors.append(str(error)))
