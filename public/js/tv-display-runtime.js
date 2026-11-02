@@ -70,7 +70,7 @@
       if (!token) await localToken();
       if (!token || !fresh()) return;
       const headers = {'Content-Type': 'application/json', 'X-Device-Token': token};
-      const response = await request('/api/screen/heartbeat', {method: 'POST', headers, body: JSON.stringify({id: screen, name: screen === 'main-hall' ? 'Головний екран' : screen, profile: 'schedule', version: '3.6.1'})});
+      const response = await request('/api/screen/heartbeat', {method: 'POST', headers, body: JSON.stringify({id: screen, name: screen === 'main-hall' ? 'Головний екран' : screen, profile: 'schedule', version: '4.0.3'})});
       if (response.status === 401) { token = ''; save(deviceKey, ''); return; }
       if (!response.ok) return;
       const data = await response.json();
