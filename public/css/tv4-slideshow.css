@@ -1,0 +1,11 @@
+/* Overlay stays within the scaled 1920x1080 TV display and cannot obscure alerts. */
+#afterSchoolInfo { position:absolute; inset:184px 40px 80px; z-index:5; background:#10263c; display:flex; flex-direction:column; align-items:center; padding:22px; border-radius:16px; }
+#afterSchoolInfo.hidden, #afterSchoolSlideshow.hidden { display:none !important; }
+#afterSchoolInfo h1 { font-size:42px; letter-spacing:3px; margin:0 0 18px; }
+#afterSchoolInfo .after-school-content { position:relative; flex:1; min-height:0; width:100%; }
+#afterSchoolSlideshow { position:absolute; inset:0; overflow:hidden; background:#10263c; }
+.after-school-slide { position:absolute; inset:0; opacity:0; }
+.after-school-slide.is-active { opacity:1; }
+.after-school-slide .slide-backdrop { position:absolute; inset:0; background-position:center; background-size:cover; filter:blur(28px) brightness(.42); transform:scale(1.08); }
+.after-school-slide img, .after-school-slide video { position:absolute; inset:0; height:100%; width:100%; object-fit:contain; }
+.after-school-slide:not(.is-video) video, .after-school-slide.is-video img { display:none; }

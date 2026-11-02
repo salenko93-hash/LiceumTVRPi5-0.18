@@ -1,0 +1,38 @@
+{
+  "now": "2026-10-30T09:00:00+02:00",
+  "date": "30.10.2026",
+  "clock": "09:00:00",
+  "mode": "NORMAL",
+  "schedule": {
+    "date": "2026-10-30",
+    "day_label": "П’ЯТНИЦЯ",
+    "week": {
+      "numerator": true,
+      "label": "ПАУЗА",
+      "next_label": "ЧИСЕЛЬНИК",
+      "paused": true,
+      "reason": "holiday_week",
+      "week_offset": 8,
+      "academic_week_index": 8,
+      "academic_week_number": 8,
+      "calendar_week_offset": 8,
+      "monday": "2026-10-26"
+    },
+    "shelter": false,
+    "rows": [],
+    "phase": "HOLIDAY",
+    "message": "Осінні канікули",
+    "lesson": 0,
+    "break_time": false,
+    "after_school": false,
+    "seconds_to_lesson_end": 0,
+    "seconds_to_next_lesson": 0,
+    "seconds_into_break": 0
+  },
+  "weather": {
+    "available": false
+  },
+  "duty": {
+    "enabled": false
+  }
+}

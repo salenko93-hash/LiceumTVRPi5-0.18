@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="uk" translate="no" class="notranslate" data-tv-demo="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
+  <meta name="color-scheme" content="dark">
+  <title>LyceumTV · DEMO TV Display</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/tv-display-preview.css">
+  <link rel="stylesheet" href="/css/air-raid-display.css">
+  <link rel="stylesheet" href="/css/demo.css">
+</head>
+<body>
+  <div id="demoCanvas" aria-label="Демонстраційний TV Display"></div>
+  <nav id="demoControls" aria-label="Параметри демонстраційного перегляду">
+    <strong>LYCEUMTV · DEMO</strong>
+    <label for="demoScenario">Сценарій</label>
+    <select id="demoScenario">
+      <option value="lesson">Поточний урок</option>
+      <option value="break">Перерва</option>
+      <option value="numerator">Чисельник</option>
+      <option value="denominator">Знаменник</option>
+      <option value="substitution">Заміна</option>
+      <option value="groups">Поділ на групи</option>
+      <option value="duty">Черговий клас</option>
+      <option value="holiday">Канікули</option>
+      <option value="shelter">Тривога</option>
+    </select>
+    <button id="demoFullscreen" type="button">На весь екран</button>
+    <button id="demoHide" type="button">Сховати панель</button>
+    <span>Тестові дані · без звуку</span>
+  </nav>
+  <button id="demoOpen" type="button" hidden>⚙ Параметри DEMO</button>
+  <div id="demoBadge" role="status">DEMO · ТЕСТОВІ ДАНІ · БЕЗ ЗВУКУ</div>
+  <p id="demoError" role="alert" hidden></p>
+  <script src="/js/demo.js"></script>
+</body>
+</html>

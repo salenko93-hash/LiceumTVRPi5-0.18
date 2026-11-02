@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="uk" translate="no" class="notranslate" data-tv-production="true">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="google" content="notranslate">
+  <meta name="color-scheme" content="dark">
+  <title>LyceumTV · Поточний розклад</title>
+  <link rel="icon" href="data:,">
+  <link rel="stylesheet" href="/css/tv-display-preview.css">
+  <link rel="stylesheet" href="/css/air-raid-display.css">
+</head>
+<body>
+<main id="display" aria-label="Поточний розклад восьми класів">
+  <header class="header">
+    <div class="identity"><div class="eyebrow">ЦЕНТРАЛЬНОУКРАЇНСЬКИЙ НАУКОВИЙ ЛІЦЕЙ</div><h1>ПОТОЧНИЙ РОЗКЛАД</h1><div class="edition">LYCEUMTV <span>4.0</span> <b>TV DISPLAY</b></div></div>
+    <div class="lesson-status"><div id="week">РОЗКЛАД ВОСЬМИ КЛАСІВ</div><h2 id="phase">Очікування даних</h2><div id="countdown">Підключення до наявного API…</div></div>
+    <div class="time-panel"><time id="clock">--:--:--</time><div id="date"></div><div id="weather">Погода: немає даних</div></div>
+  </header>
+  <section id="tables" aria-label="Поточні заняття">
+    <section class="table" id="table-left" aria-label="Десяті класи">
+      <div class="table-title"><h2>10 КЛАСИ</h2><span>01 — 04</span></div>
+      <div class="columns" aria-hidden="true"><span>КЛАС</span><span>ПРЕДМЕТ</span><span>УЧИТЕЛЬ</span><span>АУД.</span></div>
+      <div class="rows" id="left-rows"></div>
+    </section>
+    <section class="table" id="table-right" aria-label="Одинадцяті класи">
+      <div class="table-title"><h2>11 КЛАСИ</h2><span>05 — 08</span></div>
+      <div class="columns" aria-hidden="true"><span>КЛАС</span><span>ПРЕДМЕТ</span><span>УЧИТЕЛЬ</span><span>АУД.</span></div>
+      <div class="rows" id="right-rows"></div>
+    </section>
+  </section>
+  <footer class="footer"><span id="connection" role="status">ПІДКЛЮЧЕННЯ…</span><span id="duty"></span><span id="source">LYCEUMTV 4.0 · TV DISPLAY</span></footer>
+  <section id="special" hidden aria-label="Календарний режим"><div class="eyebrow">ЦЕНТРАЛЬНОУКРАЇНСЬКИЙ НАУКОВИЙ ЛІЦЕЙ</div><h2 id="special-title"></h2><p id="special-message"></p><span>LYCEUMTV 4.0</span></section>
+</main>
+<audio id="tv4-alarm-audio" preload="auto" src="/audio/trivoga.mp3"></audio>
+<audio id="tv4-silence-audio" preload="auto" src="/audio/minute_silence.mp3"></audio>
+<script src="/js/air-raid-display.js"></script>
+<script src="/js/tv-display-runtime.js"></script>
+<script src="/js/tv-display-preview.js"></script>
+</body>
+</html>

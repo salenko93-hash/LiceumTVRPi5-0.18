@@ -1,0 +1,38 @@
+{
+  "now": "2026-11-08T08:10:00+02:00",
+  "date": "08.11.2026",
+  "clock": "08:10:00",
+  "mode": "NORMAL",
+  "schedule": {
+    "date": "2026-11-08",
+    "day_label": "НЕДІЛЯ",
+    "week": {
+      "numerator": true,
+      "label": "ЧИСЕЛЬНИК",
+      "next_label": "ЗНАМЕННИК",
+      "paused": false,
+      "reason": "academic_week",
+      "week_offset": 8,
+      "academic_week_index": 8,
+      "academic_week_number": 9,
+      "calendar_week_offset": 9,
+      "monday": "2026-11-02"
+    },
+    "shelter": false,
+    "rows": [],
+    "phase": "NO_SCHEDULE",
+    "message": "Занять за розкладом немає",
+    "lesson": 0,
+    "break_time": false,
+    "after_school": false,
+    "seconds_to_lesson_end": 0,
+    "seconds_to_next_lesson": 0,
+    "seconds_into_break": 0
+  },
+  "weather": {
+    "available": false
+  },
+  "duty": {
+    "enabled": false
+  }
+}

@@ -257,6 +257,56 @@ class Engine:
             }
         return self.alert_status
 
+    def _weather_fallback_metno(self, cfg: dict[str, Any]) -> dict[str, Any]:
+        """Use an independent HTTPS provider when Open-Meteo is unavailable."""
+        coords = urlencode({
+            "lat": cfg.get("weather_latitude", 48.51),
+            "lon": cfg.get("weather_longitude", 32.26),
+        })
+        req = Request(
+            "https://api.met.no/weatherapi/locationforecast/2.0/compact?" + coords,
+            headers={
+                "Accept": "application/json",
+                # MET Norway requires an identifiable, non-generic user agent.
+                "User-Agent": "LyceumTV/4.0.4 (https://github.com/salenko93-hash/LiceumTVRPi5-0.18)",
+            },
+        )
+        with urlopen(req, timeout=8, context=ssl.create_default_context()) as response:
+            payload = json.loads(response.read().decode("utf-8"))
+        series = payload["properties"]["timeseries"]
+        if not series:
+            raise ValueError("Empty MET Norway forecast")
+        details = series[0]["data"]["instant"]["details"]
+        temperature = float(details["air_temperature"])
+        if not math.isfinite(temperature):
+            raise ValueError("Invalid MET Norway temperature")
+        cloud = float(details.get("cloud_area_fraction", 50))
+        symbol = (series[0]["data"].get("next_1_hours") or
+                  series[0]["data"].get("next_6_hours") or {}).get("summary", {}).get("symbol_code", "")
+        symbol = str(symbol).lower()
+        if "thunder" in symbol:
+            code = 95
+        elif "snow" in symbol or "sleet" in symbol:
+            code = 71
+        elif "rain" in symbol or "showers" in symbol:
+            code = 61
+        elif "fog" in symbol:
+            code = 45
+        else:
+            code = 0 if cloud < 15 else 2 if cloud < 75 else 3
+        return {
+            "available": True,
+            "city": str(cfg.get("weather_city", "Кропивницький")),
+            "temperature": round(temperature),
+            "apparent": round(temperature),
+            "code": code,
+            "condition": WMO.get(code, "Поточна погода"),
+            "forecast": [],
+            "provider": "met.no",
+            "updated_at": self._now().isoformat(),
+            "stale": False,
+        }
+
     def refresh_weather(self, cfg: dict[str, Any] | None = None) -> dict[str, Any]:
         cfg = cfg or self.config_store.load()
         self._next_weather = time.time() + max(
@@ -316,9 +366,17 @@ class Engine:
                 "forecast": forecast,
                 "updated_at": self._now().isoformat(),
                 "stale": False,
+                "provider": "open-meteo",
             }
         except Exception as e:
-            self.weather = {**self.weather, "stale": True, "error": type(e).__name__}
+            try:
+                self.weather = self._weather_fallback_metno(cfg)
+                return self.weather
+            except Exception as fallback_error:
+                # Preserve previously valid readings, marked stale; never fabricate temperature.
+                self.weather = {**self.weather, "stale": True,
+                                "error": type(e).__name__,
+                                "fallback_error": type(fallback_error).__name__}
             if not self.weather.get("available"):
                 self.weather = {
                     "available": False,
