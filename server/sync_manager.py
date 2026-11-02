@@ -23,15 +23,29 @@ REQUIRED = [
 ]
 
 
+# Separate, explicitly approved repositories for application releases and
+# schedule/content manifests. Never use the update-feed repository for OTA code.
+ALLOWED_CONTENT_REPOSITORIES = (
+    "salenko93-hash/LiceumTVRPi5-0.18",
+    "salenko93-hash/lyceumtv-updates",
+)
+
+
 def _https_only(url: str) -> None:
-    if not str(url).startswith("https://"):
-        raise ValueError("Дозволено лише HTTPS URL")
-    parsed=urlsplit(url)
-    prefixes={'github.com':'/salenko93-hash/LiceumTVRPi5-0.18/',
-              'raw.githubusercontent.com':'/salenko93-hash/LiceumTVRPi5-0.18/',
-              'api.github.com':'/repos/salenko93-hash/LiceumTVRPi5-0.18/'}
-    if parsed.hostname in prefixes and not parsed.path.startswith(prefixes[parsed.hostname]):
-        raise ValueError('GitHub source must be the official LyceumTV repository')
+    parsed = urlsplit(str(url))
+    if parsed.scheme != "https" or not parsed.hostname or parsed.username or parsed.password or parsed.port not in (None, 443):
+        raise ValueError("Дозволено лише HTTPS URL без вбудованих облікових даних")
+    # GitHub content remains pinned to the two repositories controlled by
+    # this deployment; other GitHub repositories are rejected explicitly.
+    github_prefixes = {
+        "github.com": tuple("/" + repo + "/" for repo in ALLOWED_CONTENT_REPOSITORIES),
+        "raw.githubusercontent.com": tuple("/" + repo + "/" for repo in ALLOWED_CONTENT_REPOSITORIES),
+        "api.github.com": tuple("/repos/" + repo + "/" for repo in ALLOWED_CONTENT_REPOSITORIES),
+    }
+    if parsed.hostname in github_prefixes and not any(
+        parsed.path.startswith(prefix) for prefix in github_prefixes[parsed.hostname]
+    ):
+        raise ValueError("GitHub content source is not an approved LyceumTV repository")
 
 
 def _download(url: str, timeout: int = 20) -> bytes:

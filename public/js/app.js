@@ -1234,7 +1234,7 @@
           id: screenId,
           name: screenId === "main-hall" ? "Головний екран" : screenId,
           profile: screenProfile,
-          version: "3.6.1",
+          version: "4.0.3",
           music_status: musicStatus(),
         }),
       });
