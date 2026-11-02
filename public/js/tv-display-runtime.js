@@ -54,7 +54,7 @@
     if (pending || !fresh()) return;
     pending = true;
     try {
-      if (current.mode === 'NORMAL') {
+      if (current.mode === 'NORMAL' && !(window.afterSchoolSlideshow?.getStatus().active && window.afterSchoolSlideshow?.getStatus().hasMedia)) {
         const response = await request('/api/audio/current');
         if (response.ok) {
           const data = await response.json();

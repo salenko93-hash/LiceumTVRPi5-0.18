@@ -1,6 +1,6 @@
 {
   "app_name": "LyceumTV",
-  "version": "4.0.3",
+  "version": "4.0.4",
   "host": "127.0.0.1",
   "port": 8080,
   "timezone": "Europe/Kyiv",
