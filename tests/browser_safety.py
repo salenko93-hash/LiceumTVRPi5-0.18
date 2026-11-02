@@ -1,5 +1,6 @@
 """Optional browser regressions: python tests/browser_safety.py (Playwright).
 
+Legacy slideshow checks use /legacy-tv; TV Display has separate browser tests.
 All data, generated PNG/WAV and the server live in a disposable temporary copy.
 No physical Pi or production server is contacted.
 """
@@ -141,12 +142,16 @@ def run():
                     },
                 }
                 with sync_playwright() as p:
-                    executable = shutil.which("chromium") or shutil.which(
-                        "chromium-browser"
+                    executable = (
+                        shutil.which("chromium")
+                        or shutil.which("chromium-browser")
+                        or shutil.which("google-chrome")
+                        or shutil.which("google-chrome-stable")
                     )
                     browser = p.chromium.launch(
                         executable_path=executable,
                         headless=True,
+                        chromium_sandbox=True,
                         args=["--autoplay-policy=no-user-gesture-required"],
                     )
                     context = browser.new_context(timezone_id="Europe/Kyiv")
@@ -227,7 +232,7 @@ def run():
                         "**/api/audio/current",
                         lambda route: route.fulfill(json={"event": None}),
                     )
-                    page.goto(base, wait_until="domcontentloaded")
+                    page.goto(base + "/legacy-tv", wait_until="domcontentloaded")
                     wait_for(page, "window.afterSchoolSlideshow.getStatus().active")
                     offline[0] = True
                     page.clock.fast_forward(5100)
@@ -273,7 +278,7 @@ def run():
                     reload_page.route(
                         "**/api/state", lambda route: route.fulfill(json=version_state)
                     )
-                    reload_page.goto(base, wait_until="domcontentloaded")
+                    reload_page.goto(base + "/legacy-tv", wait_until="domcontentloaded")
                     reload_page.wait_for_timeout(1200)
                     version_state["app"]["version"] = "3.5.2"
                     for _ in range(40):
