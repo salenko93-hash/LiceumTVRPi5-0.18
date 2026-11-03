@@ -24,6 +24,15 @@ class SlideshowUiTests(unittest.TestCase):
         self.assertNotIn("afterSchoolPhotoCount", js)
         self.assertNotIn("photo.title", js)
 
+    def test_tv4_slideshow_overrides_legacy_hide_rule(self):
+        html = self.text("public/tv4.html")
+        css = self.text("public/css/tv4-slideshow.css")
+        self.assertIn('href="/css/tv4-slideshow.css"', html)
+        self.assertIn(
+            ".after-school #afterSchoolInfo:not(.hidden) { display:flex !important; }",
+            css,
+        )
+
     def test_admin_has_slideshow_title_setting(self):
         html = self.text("public/admin.html")
         js = self.text("public/js/admin.js")

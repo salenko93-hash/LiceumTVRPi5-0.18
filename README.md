@@ -23,14 +23,14 @@ Raspberry Pi OS 64-bit, Raspberry Pi 5, Python 3.10+, SSH та звичайни�
 із sudo. До встановлення зробіть образ SD/диска й збережіть поза пристроєм.
 Використовуйте **версійний Release ZIP**, а не GitHub Source code ZIP.
 
-Для v4.0.1 на Pi:
+Для v4.0.5 на Pi:
 
 ```bash
-curl -fLO https://github.com/salenko93-hash/LiceumTVRPi5-0.18/releases/download/v4.0.1/LyceumTV-RPi5-v4.0.1.zip
-curl -fLO https://github.com/salenko93-hash/LiceumTVRPi5-0.18/releases/download/v4.0.1/LyceumTV-RPi5-v4.0.1.zip.sha256
-sha256sum -c LyceumTV-RPi5-v4.0.1.zip.sha256
-unzip LyceumTV-RPi5-v4.0.1.zip
-cd LyceumTV-RPi5-v4.0.1
+curl -fLO https://github.com/salenko93-hash/LiceumTVRPi5-0.18/releases/download/v4.0.5/LyceumTV-RPi5-v4.0.5.zip
+curl -fLO https://github.com/salenko93-hash/LiceumTVRPi5-0.18/releases/download/v4.0.5/LyceumTV-RPi5-v4.0.5.zip.sha256
+sha256sum -c LyceumTV-RPi5-v4.0.5.zip.sha256
+unzip LyceumTV-RPi5-v4.0.5.zip
+cd LyceumTV-RPi5-v4.0.5
 bash scripts/install_air_raid.sh 192.168.0.18
 ```
 
@@ -60,7 +60,7 @@ journalctl -u lyceumtv-official-check.service --no-pager
 Окреме адміністративне застосування конкретної перевіреної версії:
 
 ```bash
-sudo -u lyceumtv python3 -B /opt/lyceumtv/server/official_updates.py apply --tag v4.0.1 --approve
+sudo -u lyceumtv python3 -B /opt/lyceumtv/server/official_updates.py apply --tag v4.0.5 --approve
 ```
 
 Updater приймає тільки Release assets цього репозиторію, перевіряє успішний
