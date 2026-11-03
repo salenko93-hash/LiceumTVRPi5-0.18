@@ -1,6 +1,7 @@
 /* Overlay stays within the scaled 1920x1080 TV display and cannot obscure alerts. */
 #afterSchoolInfo { position:absolute; inset:184px 40px 80px; z-index:5; background:#10263c; display:flex; flex-direction:column; align-items:center; padding:22px; border-radius:16px; }
 #afterSchoolInfo.hidden, #afterSchoolSlideshow.hidden { display:none !important; }
+.after-school #afterSchoolInfo:not(.hidden) { display:flex !important; }
 #afterSchoolInfo h1 { font-size:42px; letter-spacing:3px; margin:0 0 18px; }
 #afterSchoolInfo .after-school-content { position:relative; flex:1; min-height:0; width:100%; }
 #afterSchoolSlideshow { position:absolute; inset:0; overflow:hidden; background:#10263c; }

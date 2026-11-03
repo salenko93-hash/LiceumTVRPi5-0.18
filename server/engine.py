@@ -268,7 +268,7 @@ class Engine:
             headers={
                 "Accept": "application/json",
                 # MET Norway requires an identifiable, non-generic user agent.
-                "User-Agent": "LyceumTV/4.0.4 (https://github.com/salenko93-hash/LiceumTVRPi5-0.18)",
+                "User-Agent": "LyceumTV/4.0.5 (https://github.com/salenko93-hash/LiceumTVRPi5-0.18)",
             },
         )
         with urlopen(req, timeout=8, context=ssl.create_default_context()) as response:
